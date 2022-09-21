@@ -9,7 +9,11 @@ import (
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/inpututil"
+
+	//"github.com/hajimehoshi/ebiten/examples/resources/images"
+	//_ "image/png"
+
+	//"RPG.Movement"
 )
 
 const (
@@ -22,32 +26,23 @@ var (
 	playerImage *ebiten.Image
 	playerX     = 0.0
 	playerY     = 0.0
+	// background imgage
 )
 
 func init() {
 	// player
 	playerImage, _ = ebiten.NewImage(16, 16, ebiten.FilterDefault)
 	playerImage.Fill(color.White)
-	// background (256/144)
-	// import "image background"
-	background, _ = ebiten.NewImage(256, 144, ebiten.FilterDefault)
-	background.Fill(color.White)
+
+	// background
+	
 }
+
 
 func update(screen *ebiten.Image) error {
 	// player
-	if inpututil.IsKeyJustPressed(ebiten.KeyUp) {
-		playerY--
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyDown) {
-		playerY++
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyLeft) {
-		playerX--
-	}
-	if inpututil.IsKeyJustPressed(ebiten.KeyRight) {
-		playerX++
-	}
+	updatePlayer()
+	println("playerX: ", playerX, "playerY: ", playerY)
 
 	// draw
 	screen.Fill(color.Black)
@@ -61,6 +56,10 @@ func update(screen *ebiten.Image) error {
 }
 
 func CreateWindow() {
+	rand.Seed(time.Now().UnixNano())
+	if err := ebiten.Run(update, screenWidth, screenHeight, 2, "Hello, World!"); err != nil {
+		log.Fatal(err)
+	}
 	
 }
 

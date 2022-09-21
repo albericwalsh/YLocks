@@ -1,4 +1,4 @@
-package personnage
+package RPG
 
 import (
 	"fmt"
