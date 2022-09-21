@@ -28,6 +28,10 @@ func init() {
 	// player
 	playerImage, _ = ebiten.NewImage(16, 16, ebiten.FilterDefault)
 	playerImage.Fill(color.White)
+	// background (256/144)
+	// import "image background"
+	background, _ = ebiten.NewImage(256, 144, ebiten.FilterDefault)
+	background.Fill(color.White)
 }
 
 func update(screen *ebiten.Image) error {
@@ -57,9 +61,6 @@ func update(screen *ebiten.Image) error {
 }
 
 func CreateWindow() {
-	rand.Seed(time.Now().UnixNano())
-	if err := ebiten.Run(update, screenWidth, screenHeight, 2, "Hello, World!"); err != nil {
-		log.Fatal(err)
-	}
+	
 }
 

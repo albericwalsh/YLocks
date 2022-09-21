@@ -1,10 +1,9 @@
 package main
 
 import (
-	"CreateWindow"
-	"Movement"
+	"RPG"
 )
 
 func main() {
-	CreateWindow.CreateWindow()
+	RPG.CreateWindow()
 }
