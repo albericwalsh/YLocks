@@ -1,65 +1,54 @@
 package RPG
 
-
 import (
-	"image/color"
-	"log"
-	"math/rand"
-	"time"
+	//"image/color"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
-
 	//"github.com/hajimehoshi/ebiten/examples/resources/images"
 	//_ "image/png"
-
-	//"RPG.Movement"
 )
 
-const (
-	screenWidth  = 640
-	screenHeight = 480
-)
+//create a game window with the struct Game
 
-var (
-	// player
-	playerImage *ebiten.Image
-	playerX     = 0.0
-	playerY     = 0.0
-	// background imgage
-)
-
-func init() {
-	// player
-	playerImage, _ = ebiten.NewImage(16, 16, ebiten.FilterDefault)
-	playerImage.Fill(color.White)
-
-	// background
-	
+type Game struct {
+	playerX, playerY float64
 }
 
+var (
+	titre, Version string = "Ylocks", "1.0.0"
+	playerX, playerY float64 = 0.0, 0.0
+)
 
-func update(screen *ebiten.Image) error {
-	// player
-	updatePlayer()
-	println("playerX: ", playerX, "playerY: ", playerY)
-
-	// draw
-	screen.Fill(color.Black)
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(playerX, playerY)
-	screen.DrawImage(playerImage, op)
-
-	ebitenutil.DebugPrint(screen, "Hello, World!")
-
+func (g *Game) Update(screen *ebiten.Image) error {
+	if ebiten.IsKeyPressed(ebiten.KeyZ) || ebiten.IsKeyPressed(ebiten.KeyUp) {
+		g.playerY -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyS) || ebiten.IsKeyPressed(ebiten.KeyDown) {
+		g.playerY += 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyQ) || ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		g.playerX -= 1
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyD) || ebiten.IsKeyPressed(ebiten.KeyRight) {
+		g.playerX += 1
+	}
 	return nil
 }
 
-func CreateWindow() {
-	rand.Seed(time.Now().UnixNano())
-	if err := ebiten.Run(update, screenWidth, screenHeight, 2, "Hello, World!"); err != nil {
-		log.Fatal(err)
-	}
-	
+func (g *Game) Draw(screen *ebiten.Image) {
+	ebitenutil.DebugPrint(screen, "Hello, World!")
 }
 
+func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
+	return 640, 480
+}
+
+func CreateWindow() {
+	ebiten.SetWindowSize(256, 144)
+	ebiten.SetWindowTitle(titre + " " + Version)
+	ebiten.SetWindowResizable(true)
+	if err := ebiten.RunGame(&Game{}); err != nil {
+		panic(err)
+	}
+}
