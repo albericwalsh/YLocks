@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
-	RPG.CreateWindow()
+	game := RPG.Game{}
+	game.Master()
 }
