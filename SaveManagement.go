@@ -6,6 +6,9 @@ import (
 	"os/user"
 )
 
+type SaveFile struct {
+	//save file struct
+}
 // return user home directory
 func GetHomeDir() string {
 	usr, err := user.Current()
