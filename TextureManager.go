@@ -8,8 +8,8 @@ import (
 //load all the textures
 
 var (
-	backgroundImage   *ebiten.Image
-	buttonImage       *ebiten.Image
+	BackgroundImage   *ebiten.Image
+	ButtonImage       *ebiten.Image
 	LockedButtonImage *ebiten.Image
 	OverButtonImage   *ebiten.Image
 )
@@ -17,9 +17,9 @@ var (
 // load the images
 func Textures_init() {
 	// Background
-	backgroundImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Background.png", ebiten.FilterDefault)
+	BackgroundImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Background.png", ebiten.FilterDefault)
 	// Buttons
-	buttonImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Button.png", ebiten.FilterDefault)
+	ButtonImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Button.png", ebiten.FilterDefault)
 	LockedButtonImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/LockedButton.png", ebiten.FilterDefault)
 	OverButtonImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/OverButton.png", ebiten.FilterDefault)
 }

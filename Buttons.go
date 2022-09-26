@@ -26,7 +26,7 @@ func Button(screen *ebiten.Image, Locked, Over bool, x, y int, text string) {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(float64(x), float64(y))
 		op.GeoM.Scale(3, 3)
-		screen.DrawImage(buttonImage, op)
+		screen.DrawImage(ButtonImage, op)
 		// draw the text
 		ebitenutil.DebugPrintAt(screen, text, x+10, y+10)
 	}
