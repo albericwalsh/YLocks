@@ -3,6 +3,7 @@ package main
 import (
 	"RPG"
 	"fmt"
+	"os"
 
 	"github.com/hajimehoshi/ebiten"
 )
@@ -10,18 +11,38 @@ import (
 // "github.com/hajimehoshi/ebiten/ebitenutil"
 
 type Game struct {
-	Name            string
-	Version         string
-	PlayerX         int
-	PlayerY         int
+	Name    string
+	Version string
+	PlayerX int
+	PlayerY int
+	screen  *ebiten.Image
 }
 
 var (
-	ScreenHeight = 144
-	ScreenWidth = 256
+	ScreenHeight    = 144
+	ScreenWidth     = 256
 	ScreenResHeight = 144
-	ScreenResWidth = 256
+	ScreenResWidth  = 256
 )
+
+func CheckID(ID string) {
+	switch ID {
+	case "New_Game":
+		RPG.MainMenuID = ""
+		RPG.CreateSave(RPG.Save{})
+		RPG.NewGame(RPG.Save{})
+	case "Load_Game":
+		RPG.MainMenuID = ""
+		RPG.LoadSave(RPG.Save{})
+		RPG.NewGame(RPG.Save{})
+	case "Settings":
+		fmt.Println("Settings")
+		RPG.MainMenuID = ""
+	case "Quit":
+		RPG.MainMenuID = ""
+		os.Exit(0)
+	}
+}
 
 // MainMenu is the main menu of the game
 func (g *Game) MainMenu() {
@@ -29,9 +50,9 @@ func (g *Game) MainMenu() {
 	g.Name = "YLock's"
 	// set the game version
 	g.Version = "0.0.1"
-	
+
 	// run the game
-	ebiten.SetWindowSize(ScreenHeight, ScreenWidth)
+	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
 	ebiten.SetWindowTitle(g.Name + " " + g.Version)
 	ebiten.SetWindowResizable(true)
 	if err := ebiten.RunGame(&Game{}); err != nil {
@@ -41,6 +62,9 @@ func (g *Game) MainMenu() {
 
 // Update updates the game state.
 func (g *Game) Update(screen *ebiten.Image) error {
+	fmt.Println(RPG.MainMenuID)
+	RPG.SetMousePosition()
+	CheckID(RPG.MainMenuID)
 	//update screen
 	g.Draw(screen)
 	return nil
@@ -54,6 +78,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	// background size
 	op.GeoM.Scale(1, 1)
 	screen.DrawImage(RPG.BackgroundImage, op)
+	// draw the buttons at the center of the screen
+	RPG.Button(screen, false, RPG.Center(RPG.ButtonImage, ScreenWidth), 10, "New Game", "New_Game")
+	RPG.Button(screen, RPG.CheckSave(), RPG.Center(RPG.ButtonImage, ScreenWidth), 42, "Load Game", "Load_Game")
+	RPG.Button(screen, false, RPG.Center(RPG.ButtonImage, ScreenWidth), 74, "Settings", "Settings")
+	RPG.Button(screen, false, RPG.Center(RPG.ButtonImage, ScreenWidth), 106, "Quit", "Quit")
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
@@ -66,13 +95,4 @@ func main() {
 	RPG.Textures_init()
 	game := Game{}
 	game.MainMenu()
-
-	fmt.Println(RPG.Path)
-	if RPG.CheckSave() {
-		fmt.Println("Save file exists")
-	} else {
-		fmt.Println("Save file does not exist")
-		fmt.Println("Creating save file...")
-		RPG.CreateSaveFile()
-	}
 }
