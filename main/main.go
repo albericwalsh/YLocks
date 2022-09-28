@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image/color"
 	"os"
+
 	// "time"
 
 	"github.com/hajimehoshi/ebiten"
@@ -16,9 +17,20 @@ import (
 type Game struct {
 	Name    string
 	Version string
+	Player  Player
+	screen  *ebiten.Image
+	CanMove bool
+}
+
+type Player struct {
 	PlayerX int
 	PlayerY int
-	screen  *ebiten.Image
+	Nom     string
+	PV      int
+	PA      int
+	PD      int
+	Type    string
+	Battu   bool
 }
 
 var (
@@ -31,11 +43,18 @@ var (
 	paragraph3      = "Nous allons vous remettre votre badge \nd'accès et nous vous ferons visiter \nle campus. Pour le bon déroulement \nde cette journée vous allez être \nrépartis par filières."
 	paragraph4      = "Je vous invite donc à entrer et \nà attendre que vos mentors viennent vous \nchercher. \nBonne journée !"
 	Next            = false
+	Gaga            = true
 )
 
 func print(s string, screen *ebiten.Image) {
 	// draw a white text
 	ebitenutil.DebugPrint(screen, s)
+}
+
+func SetPlayer(screen *ebiten.Image, g *Game) {
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Translate(float64(g.Player.PlayerX)-15, float64(g.Player.PlayerY)-15)
+	screen.DrawImage(RPG.PlayerImage, op)
 }
 
 func NewGame(screen *ebiten.Image, s RPG.Save) {
@@ -54,7 +73,7 @@ func NewGame(screen *ebiten.Image, s RPG.Save) {
 
 }
 
-func CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
+func CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save, g Game) {
 	switch ID {
 	case "":
 		// draw the background and set the position to 0:0
@@ -81,27 +100,41 @@ func CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
 	case "Quit":
 		os.Exit(0)
 	case "Int_1_P":
-		screen.Fill(color.RGBA{0, 0, 0, 0})
+		op := &ebiten.DrawImageOptions{}
+		screen.DrawImage(RPG.BackgroundImage, op)
+		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		print(paragraph1, screen)
 		RPG.Button(screen, false, 256-66, 144-18, "Next", "Int_2_P")
 	case "Int_2_P":
-		screen.Fill(color.RGBA{0, 0, 0, 0})
+		op := &ebiten.DrawImageOptions{}
+		screen.DrawImage(RPG.BackgroundImage, op)
+		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		print(paragraph2, screen)
 		RPG.Button(screen, false, 256-66, 144-18, "Next", "Int_3_P")
 		RPG.Button(screen, false, 2, 144-18, "Previous", "Int_1_P")
 	case "Int_3_P":
-		screen.Fill(color.RGBA{0, 0, 0, 0})
+		op := &ebiten.DrawImageOptions{}
+		screen.DrawImage(RPG.BackgroundImage, op)
+		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		print(paragraph3, screen)
 		RPG.Button(screen, false, 256-66, 144-18, "Next", "Int_4_P")
 		RPG.Button(screen, false, 2, 144-18, "Previous", "Int_2_P")
 	case "Int_4_P":
-		screen.Fill(color.RGBA{0, 0, 0, 0})
+		op := &ebiten.DrawImageOptions{}
+		screen.DrawImage(RPG.BackgroundImage, op)
+		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		print(paragraph4, screen)
 		RPG.Button(screen, false, 256-66, 144-18, "Next", "Int_Next_Chapter")
 		RPG.Button(screen, false, 2, 144-18, "Previous", "Int_3_P")
 	case "Int_Next_Chapter":
 		s.Chapter += 1
 		NewGame(screen, s)
+	case "Chp_1_0":
+		op := &ebiten.DrawImageOptions{}
+		screen.DrawImage(RPG.Background_Ch1, op)
+		SetPlayer(screen, &g)
+		fmt.Println(g.Player.PlayerX, g.Player.PlayerY)
+		//set the start coordinates of the player
 	}
 }
 
@@ -110,7 +143,7 @@ func (g *Game) MainMenu() {
 	// set the game name
 	g.Name = "YLock's"
 	// set the game version
-	g.Version = "0.0.1"
+	g.Version = "0.0.3"
 
 	// run the game
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
@@ -123,19 +156,46 @@ func (g *Game) MainMenu() {
 
 // Update updates the game state.
 func (g *Game) Update(screen *ebiten.Image) error {
-	fmt.Println(RPG.MainMenuID)
+	//fmt.Println(RPG.MainMenuID)
 	RPG.SetMousePosition()
 	//CheckButtonID(RPG.MainMenuID, screen, RPG.Save{})
-	//update screen
 	g.Draw(screen)
 	// set frame rate
+	if Gaga {
+		g.Player.PlayerX = 16
+		g.Player.PlayerY = 144 - 16
+		Gaga = false
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyUp) {
+		if g.Player.PlayerY > 16 {
+			g.Player.PlayerY -= 1
+		}
+		fmt.Println(g.Player.PlayerY)
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyDown) {
+		if g.Player.PlayerY < 144-16 {
+			g.Player.PlayerY += 1
+		}
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+		if g.Player.PlayerX > 16 {
+			g.Player.PlayerX -= 1
+		}
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyRight) {
+		if g.Player.PlayerX < 256-16 {
+			g.Player.PlayerX += 1
+		}
+	}
+	// fmt.Print(g.PlayerX, g.Player.PlayerY)
+
 	ebiten.SetMaxTPS(60)
 	return nil
 }
 
 // Draw draws the game screen.
 func (g *Game) Draw(screen *ebiten.Image) {
-	CheckButtonID(RPG.MainMenuID, screen, RPG.Save{})
+	CheckButtonID(RPG.MainMenuID, screen, RPG.Save{}, *g)
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
