@@ -10,6 +10,7 @@ import (
 )
 
 type Save struct {
+	CanLoad bool `json:"CanLoad"`
 	Chapter int `json:"Chapter"`
 	PlayerX int `json:"PlayerX"`
 	PlayerY int `json:"PlayerY"`
@@ -48,7 +49,7 @@ func CreateSave(save Save) {
 		os.Mkdir(FixPath(GetHomeDir()+"/AppData/Local/YLock's"), 0777)
 		os.Create(Path)
 		// MarshalSave(save)
-		u, err := json.Marshal(File)
+		u, err := json.Marshal(save)
     	if err != nil {
 			log.Fatal(err)
     	}
@@ -66,13 +67,8 @@ func LoadSave(save Save) {
 	} else if err != nil {
 		log.Fatal(err)
 	} else {
-		u := json.NewDecoder(File)
-		data := []byte{}
-		u.Decode(data)
-		err := json.Unmarshal(data, &save)
-		if err != nil {
-			log.Fatal(err)
-		}
+		u, _ := ioutil.ReadFile(Path)
+		json.Unmarshal(u, &save)
 	}
 	File.Close()
 }
@@ -86,4 +82,30 @@ func CheckSave() bool {
 	}
 	File.Close()
 	return true
+}
+
+func CanLoad(save Save) bool {
+	LoadSave(save)
+	return save.CanLoad
+}
+
+func SetCanLoad(save Save, canload bool) {
+	LoadSave(save)
+	save.CanLoad = canload
+	// MarshalSave(save)
+	u, err := json.Marshal(save)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	ioutil.WriteFile(Path, u, 0777)
+}
+
+func UpdateSave(save Save) {
+	LoadSave(save)
+	u, err := json.Marshal(save)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ioutil.WriteFile(Path, u, 0777)
 }

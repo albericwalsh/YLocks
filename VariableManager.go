@@ -1,7 +1,7 @@
 package RPG
 
 import "github.com/hajimehoshi/ebiten"
-	
+
 var (
 	MouseX = 0
 	MouseY = 0

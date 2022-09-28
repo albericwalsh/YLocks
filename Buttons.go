@@ -9,6 +9,7 @@ import (
 )
  var (
 	MainMenuID = ""
+	Fix = false
  )
 func Center(Object *ebiten.Image, ref int) int {
 	Object_Width := Object.Bounds().Dx()
@@ -39,13 +40,17 @@ func Button(screen *ebiten.Image, Locked bool, x, y int, text string, ID string)
 			screen.DrawImage(OverButtonImage, op)
 			// draw the text
 			ebitenutil.DebugPrintAt(screen, text, x+1+Center(LockedButtonImage, LockedButtonImage.Bounds().Dx()), y+1)
+			Fix = true
 		} else if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(x-1), float64(y-1))
 			screen.DrawImage(OverButtonImage, op)
 			// draw the text
 			ebitenutil.DebugPrintAt(screen, text, x-1+Center(LockedButtonImage, LockedButtonImage.Bounds().Dx()), y-1)
-			MainMenuID = ID
+			if Fix {
+				Fix = false
+				MainMenuID = ID
+			}
 		} else {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(x), float64(y))
