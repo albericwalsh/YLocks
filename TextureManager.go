@@ -1,6 +1,8 @@
 package RPG
 
 import (
+	"image"
+
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
@@ -17,10 +19,17 @@ var (
 	PlayerImage       *ebiten.Image
 	PaulImage         *ebiten.Image
 	Vitaly            *ebiten.Image
+	Warning           *ebiten.Image
+	Success           *ebiten.Image
+	wesh              *ebiten.Image
+	IconImage         []image.Image
 )
 
 // load the images
 func Textures_init() {
+	// Gui
+	wesh, _, _ = ebitenutil.NewImageFromFile("assets/Icon.png", ebiten.FilterDefault)
+	IconImage = append(IconImage, wesh.SubImage(image.Rect(0, 0, 32, 32)).(*ebiten.Image))
 	// Background
 	BackgroundImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Background.png", ebiten.FilterDefault)
 	// Buttons
@@ -35,4 +44,7 @@ func Textures_init() {
 	PlayerImage, _, _ = ebitenutil.NewImageFromFile("Assets/Character_Textures/player.png", ebiten.FilterDefault)
 	PaulImage, _, _ = ebitenutil.NewImageFromFile("Assets/Character_Textures/Paul.png", ebiten.FilterDefault)
 	Vitaly, _, _ = ebitenutil.NewImageFromFile("Assets/Character_Textures/Vitaly.png", ebiten.FilterDefault)
+	// icon
+	Warning, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Warning.png", ebiten.FilterDefault)
+	Success, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Success.png", ebiten.FilterDefault)
 }
