@@ -2,6 +2,7 @@ package RPG
 
 import (
 	"image"
+	"os"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -21,15 +22,28 @@ var (
 	Vitaly            *ebiten.Image
 	Warning           *ebiten.Image
 	Success           *ebiten.Image
-	wesh              *ebiten.Image
+	wesh              image.Image
 	IconImage         []image.Image
 )
+
+func LoadImg(s string) image.Image {
+	file, err := os.Open(s)
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+	img, _, err := image.Decode(file)
+	if err != nil {
+		panic(err)
+	}
+	return image.Image(img)
+}
 
 // load the images
 func Textures_init() {
 	// Gui
-	wesh, _, _ = ebitenutil.NewImageFromFile("assets/Icon.png", ebiten.FilterDefault)
-	IconImage = append(IconImage, wesh.SubImage(image.Rect(0, 0, 32, 32)).(*ebiten.Image))
+	wesh = LoadImg("assets/Icon.png")
+	IconImage = append(IconImage, wesh)
 	// Background
 	BackgroundImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Background.png", ebiten.FilterDefault)
 	// Buttons

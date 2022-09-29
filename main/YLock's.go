@@ -47,10 +47,11 @@ var (
 	Next            = false
 	Gaga            = true
 	InFight         = false
-	CanMove         = true
+	CanMove         = false
 	YourTurn        = true
 	MobName         = ""
 	Pv              = 0
+	Current_Level   = ""
 
 	Mob = map[string]Player{}
 )
@@ -134,7 +135,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			ebitenutil.DebugPrintAt(screen, m[v].Nom, 2, 2)
 			ebitenutil.DrawRect(screen, 2, 19, 100, 5, color.RGBA{0, 0, 0, 170})
 			ebitenutil.DrawLine(screen, 3, 20, 100, 20, color.RGBA{200, 200, 200, 170})
-			ebitenutil.DrawLine(screen, 3, 20, float64(*PV)*10, 20, color.RGBA{0, 255, 0, 170})
+			ebitenutil.DrawLine(screen, 3, 20, (float64(*PV)*100)/float64(m[v].PV), 20, color.RGBA{0, 255, 0, 170})
 			ebitenutil.DrawLine(screen, 3, 22, 100, 22, color.RGBA{200, 200, 200, 170})
 			ebitenutil.DrawLine(screen, 3, 22, float64(m[v].PA)*10, 22, color.RGBA{255, 0, 0, 170})
 			// draw button
@@ -168,7 +169,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			op.GeoM.Translate(0, 0)
 			screen.DrawImage(RPG.BackgroundImage, op)
 			ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
-			ebitenutil.DebugPrintAt(screen, "You've beat "+v, 10, 10)
+			ebitenutil.DebugPrintAt(screen, "You've beaten "+v, 10, 10)
 			RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Continue", "Beaten")
 			if RPG.MainMenuID == "Beaten" {
 				InFight = false
@@ -210,7 +211,7 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
 		screen.DrawImage(RPG.BackgroundImage, op)
 		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		ebitenutil.DebugPrintAt(screen, "Settings", 10, 10)
-		RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Ok", "")
+		RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Ok", Current_Level)
 		// Settings
 		// Fullscreen
 		ebitenutil.DebugPrintAt(screen, "Fullscreen", 22, 30)
@@ -261,6 +262,8 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
 		s.Chapter += 1
 		NewGame(screen, s)
 	case "Chp_1_0":
+		CanMove = true
+		Current_Level = "Chp_1_0"
 		op := &ebiten.DrawImageOptions{}
 		screen.DrawImage(RPG.Background_Ch1, op)
 		DrawMob(Mob, screen)
@@ -288,6 +291,14 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
 		g.Fight(screen, MobName, Mob, &Pv)
 	case "Fight":
 		g.Fight(screen, MobName, Mob, &Pv)
+	case "Pause":
+		op := &ebiten.DrawImageOptions{}
+		screen.DrawImage(RPG.BackgroundImage, op)
+		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
+		ebitenutil.DrawRect(screen, 0, 0, 0, 144, color.RGBA{0, 0, 0, 170})
+		RPG.Button(screen, false, 256-66, 144-18, "Resume", Current_Level)
+		RPG.Button(screen, false, 2, 144-18, "Settings", "Settings")
+		RPG.Button(screen, false, 2, 2, "Quit", "Quit")
 	}
 }
 
@@ -298,6 +309,7 @@ func (g *Game) MainMenu() {
 	// set the game version
 	g.Version = "0.0.3"
 	// run the game
+	ebiten.SetWindowIcon(RPG.IconImage)
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
 	ebiten.SetWindowTitle(g.Name + " " + g.Version)
 	ebiten.SetWindowResizable(true)
@@ -354,6 +366,10 @@ func (g *Game) Update(screen *ebiten.Image) error {
 					g.Player.PlayerX += 1
 				}
 			}
+		}
+		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+			RPG.MainMenuID = "Pause"
+			CanMove = false
 		}
 	}
 	// fmt.Print(g.PlayerX, g.Player.PlayerY)
