@@ -20,6 +20,7 @@ var (
 	PlayerImage       *ebiten.Image
 	PaulImage         *ebiten.Image
 	Vitaly            *ebiten.Image
+	Avatar 		  	  *ebiten.Image
 	Warning           *ebiten.Image
 	Success           *ebiten.Image
 	wesh              image.Image
@@ -52,6 +53,8 @@ func Textures_init() {
 	OverButtonImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/OverButton.png", ebiten.FilterDefault)
 	// Card Reader
 	Card_Reader, _, _ = ebitenutil.NewImageFromFile("Assets/Map_Textures/Card_Reader.png", ebiten.FilterDefault)
+	// Card Reader
+	Avatar, _, _ = ebitenutil.NewImageFromFile("Assets/Map_Textures/Avatar.png", ebiten.FilterDefault)
 	// Chapter Backgrounds
 	Background_Ch1, _, _ = ebitenutil.NewImageFromFile("Assets/Map_Textures/Background_Ch1.png", ebiten.FilterDefault)
 	// Player
