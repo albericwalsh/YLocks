@@ -10,6 +10,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
 // "github.com/hajimehoshi/ebiten/ebitenutil"
@@ -180,7 +181,6 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 				YourTurn = false
 				RPG.MainMenuID = "Fight"
 			case "Regen":
-				fmt.Println(PlayerPV + g.Player.PD)
 				if PlayerPV+g.Player.PD <= g.Player.PV {
 					PlayerPV += g.Player.PD
 				} else {
@@ -273,7 +273,11 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		screen.DrawImage(RPG.BackgroundImage, op)
 		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		ebitenutil.DebugPrintAt(screen, "Settings", 10, 10)
-		RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Ok", Current_Level)
+		if Current_Level == "" {
+			RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Ok", "")
+		} else {
+			RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Ok", Current_Level)
+		}
 		// Settings
 		// Fullscreen
 		ebitenutil.DebugPrintAt(screen, "Fullscreen", 22, 30)
@@ -358,15 +362,15 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		screen.DrawImage(RPG.BackgroundImage, op)
 		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		ebitenutil.DrawRect(screen, 0, 0, 0, 144, color.RGBA{0, 0, 0, 170})
+		RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, Mob: g.Mob})
 		RPG.Button(screen, false, 256-66, 144-18, "Resume", Current_Level)
 		RPG.Button(screen, false, 256-66, 2, "Main Menu", "")
 		RPG.Button(screen, false, 2, 144-18, "Settings", "Settings")
 		RPG.Button(screen, false, 2, 2, "Quit", "Quit")
-		if ebiten.IsKeyPressed(ebiten.KeyEscape) && !Pause {
+		if inpututil.IsKeyJustReleased(ebiten.KeyEscape) {
 			RPG.MainMenuID = Current_Level
-			Pause = true
+			Pause = false
 		}
-
 	}
 }
 
@@ -430,8 +434,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 				}
 			}
 		}
-		if ebiten.IsKeyPressed(ebiten.KeyEscape) && !Pause {
-			Pause = true
+		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 			RPG.MainMenuID = "Pause"
 			CanMove = false
 		}
