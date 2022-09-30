@@ -1,6 +1,7 @@
 package RPG
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/user"
@@ -10,13 +11,13 @@ import (
 )
 
 type Save struct {
-	CanLoad bool `json:"CanLoad"`
-	Chapter int `json:"Chapter"`
-	PlayerX int `json:"PlayerX"`
-	PlayerY int `json:"PlayerY"`
-	PV      int `json:"PV"`
-	PA      int `json:"PA"`
-	PD      int `json:"PD"`
+	CanLoad bool   `json:"CanLoad"`
+	Chapter string `json:"Chapter"`
+	PlayerX int    `json:"PlayerX"`
+	PlayerY int    `json:"PlayerY"`
+	PV      int    `json:"PV"`
+	PA      int    `json:"PA"`
+	PD      int    `json:"PD"`
 }
 
 // return usr home directory
@@ -43,31 +44,33 @@ func FixPath(Path string) string {
 	return string(newpath)
 }
 
-func CreateSave(save Save) {
-	File, err := os.Open(Path)
+func CreateSave(save *Save) {
+	_, err := os.Open(Path)
 	if os.IsNotExist(err) {
 		os.Mkdir(FixPath(GetHomeDir()+"/AppData/Local/YLock's"), 0777)
 		os.Create(Path)
-		// MarshalSave(save)
-		u, err := json.Marshal(save)
-    	if err != nil {
-			log.Fatal(err)
-    	}
-    	ioutil.WriteFile(Path, u, 0777)
+		fmt.Println("Folder created")
 	} else {
-		log.Fatal(err)
+		savecontent, err := json.Marshal(save)
+		if err != nil {
+			panic(err)
+		}
+		err = ioutil.WriteFile(Path, savecontent, 0777)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Save file created")
 	}
-	File.Close()
 }
 
-func LoadSave(save Save) {
+func LoadSave(save *Save) {
 	File, err := os.Open(Path)
 	if os.IsNotExist(err) {
 		CreateSave(save)
 	} else if err != nil {
 		log.Fatal(err)
 	} else {
-		u, _ := ioutil.ReadFile(Path)
+		u, _ := ioutil.ReadAll(File)
 		json.Unmarshal(u, &save)
 	}
 	File.Close()
@@ -85,27 +88,18 @@ func CheckSave() bool {
 }
 
 func CanLoad(save Save) bool {
-	LoadSave(save)
+	LoadSave(&save)
 	return save.CanLoad
 }
 
-func SetCanLoad(save Save, canload bool) {
-	LoadSave(save)
-	save.CanLoad = canload
-	// MarshalSave(save)
-	u, err := json.Marshal(save)
+func UpdateSave(save *Save) {
+	savecontent, err := json.Marshal(save)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	
-	ioutil.WriteFile(Path, u, 0777)
-}
-
-func UpdateSave(save Save) {
-	LoadSave(save)
-	u, err := json.Marshal(save)
+	err = ioutil.WriteFile(Path, savecontent, 0777)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	ioutil.WriteFile(Path, u, 0777)
+	fmt.Println("Save file updated")
 }

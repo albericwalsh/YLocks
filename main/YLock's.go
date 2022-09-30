@@ -67,19 +67,19 @@ func SetPlayer(screen *ebiten.Image, g *Game) {
 	screen.DrawImage(RPG.PlayerImage, op)
 }
 
-func NewGame(screen *ebiten.Image, s RPG.Save) {
-	switch s.Chapter {
-	case 0:
+func NewGame(screen *ebiten.Image, s *RPG.Save) {
+	switch Current_Level {
+	case "Int_1_P":
 		RPG.MainMenuID = "Int_1_P"
-	case 1:
+	case "Chp_1_0":
 		RPG.MainMenuID = "Chp_1_0"
 		Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 10, PA: 1, PD: 1, Beaten: false, Type: "Machine", Image: RPG.Card_Reader}
 		Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 20, PA: 1, PD: 1, Beaten: false, Type: "Master Boss", Image: RPG.PaulImage}
-	case 2:
+	case "Chp_2_0":
 		//start 2nd chapter (Souk)
-	case 3:
+	case "Chp_3_0":
 		//start 3rd chapter (Classes)
-	case 4:
+	case "Chp_4_0":
 		//start Final chapter (Final Dungeon)
 	}
 
@@ -146,7 +146,6 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			switch RPG.MainMenuID {
 			case "Attack":
 				*PV -= g.Player.PA
-				fmt.Println(PV)
 				YourTurn = false
 				RPG.MainMenuID = "Fight"
 			case "Regen":
@@ -177,13 +176,14 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 				temp := Mob[MobName]
 				temp.Beaten = true
 				Mob[MobName] = temp
-				RPG.MainMenuID = "Chp_1_0"
+				RPG.MainMenuID = "Chp_1_0" // change the chapitre next level
+				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: g.Player.PV, PA: g.Player.PA, PD: g.Player.PD})
 			}
 		}
 	}
 }
 
-func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
+func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 	switch ID {
 	case "":
 		// draw the background and set the position to 0:0
@@ -198,13 +198,13 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
 		RPG.Button(screen, false, RPG.Center(RPG.ButtonImage, ScreenWidth), 74, "Settings", "Settings")
 		RPG.Button(screen, false, RPG.Center(RPG.ButtonImage, ScreenWidth), 106, "Quit", "Quit")
 	case "New_Game":
-		//RPG.CreateSave(RPG.Save{})
-		NewGame(screen, RPG.Save{})
-		//RPG.SetCanLoad(RPG.Save{}, true)
+		s.Chapter = "Int_1_P"
+		Current_Level = s.Chapter
+		NewGame(screen, &RPG.Save{})
+		RPG.CreateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: g.Player.PV, PA: g.Player.PA, PD: g.Player.PD})
 	case "Load_Game":
-		//RPG.LoadSave(RPG.Save{})
-		NewGame(screen, RPG.Save{})
-		fmt.Print(RPG.Save{})
+		RPG.LoadSave(&RPG.Save{})
+		NewGame(screen, &RPG.Save{})
 	case "Settings":
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(0, 0)
@@ -230,6 +230,7 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
 		}
 		//
 	case "Quit":
+		RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: g.Player.PV, PA: g.Player.PA, PD: g.Player.PD})
 		os.Exit(0)
 	case "Int_1_P":
 		op := &ebiten.DrawImageOptions{}
@@ -259,7 +260,8 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
 		RPG.Button(screen, false, 256-66, 144-18, "Next", "Int_Next_Chapter")
 		RPG.Button(screen, false, 2, 144-18, "Previous", "Int_3_P")
 	case "Int_Next_Chapter":
-		s.Chapter += 1
+		s.Chapter = "Chp_1_0"
+		Current_Level = "Chp_1_0"
 		NewGame(screen, s)
 	case "Chp_1_0":
 		CanMove = true
@@ -282,8 +284,6 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s RPG.Save) {
 						RPG.MainMenuID = "Init_Fight"
 						MobName = v.Nom
 					}
-				} else {
-					fmt.Println("Already beaten")
 				}
 			}
 		}
@@ -382,7 +382,7 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	g.Player.PA = 5
 	g.Player.PD = 5
 	g.Player.PV = 10
-	g.CheckButtonID(RPG.MainMenuID, screen, RPG.Save{})
+	g.CheckButtonID(RPG.MainMenuID, screen, &RPG.Save{})
 }
 
 // Layout takes the outside size (e.g., the window size) and returns the (logical) screen size.
