@@ -19,7 +19,7 @@ type Game struct {
 	Version string
 	Player  Player
 	screen  *ebiten.Image
-	Mob     map[string]struct{}
+	Mob     map[string]Player
 }
 
 type Player struct {
@@ -55,6 +55,12 @@ var (
 	Pv              = 0
 	Current_Level   = ""
 	PlayerPV        = 0
+	MobX            = map[string]int{}
+	MobY            = map[string]int{}
+	MobPV           =	map[string]int{}
+	MobPA           = map[string]int{}
+	MobPD           = 		map[string]int{}
+	MobBeaten       =  map[string]bool{}
 
 	Mob = map[string]Player{}
 )
@@ -98,6 +104,15 @@ func (g *Game) NewGame(screen *ebiten.Image, s *RPG.Save) {
 		//start Final chapter (Final Dungeon)
 	}
 
+}
+
+func SetMobVariable(m map[string]Player, name string) {
+	MobX[name] = m[name].PlayerX
+	MobY[name] = m[name].PlayerY
+	MobPV[name] = m[name].PV
+	MobPA[name] = m[name].PA
+	MobPD[name] = m[name].PD
+	MobBeaten[name] = m[name].Beaten
 }
 
 func DrawMob(m map[string]Player, screen *ebiten.Image) {
@@ -214,8 +229,11 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 				temp := Mob[MobName]
 				temp.Beaten = true
 				Mob[MobName] = temp
+				g.Mob = Mob
 				RPG.MainMenuID = "Chp_1_0" // change the chapitre next level
-				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, Mob: g.Mob})
+				SetMobVariable(Mob, MobName)
+				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, MobX: MobX, MobY: MobY, MobPV: MobPV, MobPA: MobPA, MobPD: MobPD, MobBeaten: MobBeaten})
+				fmt.Println(Mob)
 			}
 		} else if PlayerPV <= 0 {
 			// draw the Background

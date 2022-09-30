@@ -11,14 +11,19 @@ import (
 )
 
 type Save struct {
-	CanLoad bool   `json:"CanLoad"`
-	Chapter string `json:"Chapter"`
-	PlayerX int    `json:"PlayerX"`
-	PlayerY int    `json:"PlayerY"`
-	PV      int    `json:"PV"`
-	PA      int    `json:"PA"`
-	PD      int    `json:"PD"`
-	Mob     map[string]struct{} `json:"Mob"`
+	CanLoad bool                `json:"CanLoad"`
+	Chapter string              `json:"Chapter"`
+	PlayerX int                 `json:"PlayerX"`
+	PlayerY int                 `json:"PlayerY"`
+	PV      int                 `json:"PV"`
+	PA      int                 `json:"PA"`
+	PD      int                 `json:"PD"`
+	MobX     map[string]int    `json:"MobX"`
+	MobY     map[string]int    `json:"MobY"`
+	MobPV    map[string]int    `json:"MobPV"`
+	MobPA    map[string]int    `json:"MobPA"`
+	MobPD    map[string]int    `json:"MobPD"`
+	MobBeaten map[string]bool   `json:"MobBeaten"`
 }
 
 // return usr home directory
@@ -64,7 +69,7 @@ func CreateSave(save *Save) {
 	}
 }
 
-func LoadSave(save *Save) Save{
+func LoadSave(save *Save) Save {
 	jsonFile, err := os.Open(Path)
 	if os.IsNotExist(err) {
 		CreateSave(save)
