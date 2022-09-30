@@ -4,6 +4,7 @@ import (
 	"RPG"
 	"fmt"
 	"image/color"
+	"math/rand"
 	"os"
 
 	// "time"
@@ -19,6 +20,7 @@ type Game struct {
 	Version string
 	Player  Player
 	screen  *ebiten.Image
+	Mob     map[string]struct{}
 }
 
 type Player struct {
@@ -49,9 +51,11 @@ var (
 	InFight         = false
 	CanMove         = false
 	YourTurn        = true
+	Pause           = false
 	MobName         = ""
 	Pv              = 0
 	Current_Level   = ""
+	PlayerPV        = 0
 
 	Mob = map[string]Player{}
 )
@@ -67,14 +71,26 @@ func SetPlayer(screen *ebiten.Image, g *Game) {
 	screen.DrawImage(RPG.PlayerImage, op)
 }
 
-func NewGame(screen *ebiten.Image, s *RPG.Save) {
+func (g *Game) NewGame(screen *ebiten.Image, s *RPG.Save) {
+	if s.CanLoad {
+		Current_Level = s.Chapter
+		g.Player.PlayerX = s.PlayerX
+		g.Player.PlayerY = s.PlayerY
+		g.Player.PV = s.PV
+		g.Player.PA = s.PA
+		g.Player.PD = s.PD
+	}
+	if !s.CanLoad {
+		g.Player.PlayerX = 16
+		g.Player.PlayerY = 144 - 16
+	}
 	switch Current_Level {
 	case "Int_1_P":
 		RPG.MainMenuID = "Int_1_P"
 	case "Chp_1_0":
 		RPG.MainMenuID = "Chp_1_0"
-		Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 10, PA: 1, PD: 1, Beaten: false, Type: "Machine", Image: RPG.Card_Reader}
-		Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 20, PA: 1, PD: 1, Beaten: false, Type: "Master Boss", Image: RPG.PaulImage}
+		Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 10, PA: 3, PD: 1, Beaten: false, Type: "Machine", Image: RPG.Card_Reader}
+		Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 20, PA: 6, PD: 5, Beaten: false, Type: "Master Boss", Image: RPG.PaulImage}
 	case "Chp_2_0":
 		//start 2nd chapter (Souk)
 	case "Chp_3_0":
@@ -107,6 +123,7 @@ func DrawMob(m map[string]Player, screen *ebiten.Image) {
 func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *int) {
 	if RPG.MainMenuID == "Init_Fight" {
 		*PV = m[v].PV
+		PlayerPV = g.Player.PV
 		RPG.MainMenuID = "Fight"
 	} else if RPG.MainMenuID == "Fight" {
 		if *PV > 0 {
@@ -122,7 +139,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			screen.DrawImage(RPG.PlayerImage, op)
 			ebitenutil.DrawRect(screen, 9, float64(ScreenResHeight)-79, 100, 5, color.RGBA{0, 0, 0, 170})
 			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-78, 100, float64(ScreenResHeight)-78, color.RGBA{200, 200, 200, 170})
-			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-78, float64(g.Player.PV)*10, float64(ScreenResHeight)-78, color.RGBA{0, 255, 0, 170})
+			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-78, float64(PlayerPV)*10, float64(ScreenResHeight)-78, color.RGBA{0, 255, 0, 170})
 			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-76, 100, float64(ScreenResHeight)-76, color.RGBA{200, 200, 200, 170})
 			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-76, float64(g.Player.PA)*10, float64(ScreenResHeight)-76, color.RGBA{255, 0, 0, 170})
 			// draw the Mob at the Right top of the screen
@@ -145,11 +162,17 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			//---------------------------------------------------------------------------------------------------------
 			switch RPG.MainMenuID {
 			case "Attack":
-				*PV -= g.Player.PA
+				critical := rand.Intn(10)
+				*PV -= g.Player.PA * critical
 				YourTurn = false
 				RPG.MainMenuID = "Fight"
 			case "Regen":
-				g.Player.PV += g.Player.PD
+				if PlayerPV+g.Player.PD <= g.Player.PV {
+					PlayerPV += g.Player.PD
+				} else {
+					PlayerPV = g.Player.PV
+					// RPG.PrintonTime(screen, "You are full HP",10,10, 0)
+				}
 				YourTurn = false
 				RPG.MainMenuID = "Fight"
 			case "Run":
@@ -158,7 +181,8 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 				CanMove = true
 			}
 			if !YourTurn {
-				g.Player.PV -= m[v].PA
+				PlayerPV -= m[v].PA
+				// RPG.PrintonTime(screen, m[v].Nom+" attack you, damage "+string(m[v].PA), 10, 10, 2)
 				YourTurn = true
 			}
 		}
@@ -177,8 +201,17 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 				temp.Beaten = true
 				Mob[MobName] = temp
 				RPG.MainMenuID = "Chp_1_0" // change the chapitre next level
-				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: g.Player.PV, PA: g.Player.PA, PD: g.Player.PD})
+				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, Mob: g.Mob})
 			}
+		} else if PlayerPV <= 0 {
+			// draw the Background
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(0, 0)
+			screen.DrawImage(RPG.BackgroundImage, op)
+			ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
+			ebitenutil.DebugPrintAt(screen, "You are beaten by "+v, 10, 10)
+			RPG.DeleteSave()
+			RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Return Main Menu", "")
 		}
 	}
 }
@@ -200,11 +233,12 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 	case "New_Game":
 		s.Chapter = "Int_1_P"
 		Current_Level = s.Chapter
-		NewGame(screen, &RPG.Save{})
-		RPG.CreateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: g.Player.PV, PA: g.Player.PA, PD: g.Player.PD})
+		s.CanLoad = false
+		g.NewGame(screen, &RPG.Save{})
+		RPG.CreateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD})
 	case "Load_Game":
-		RPG.LoadSave(&RPG.Save{})
-		NewGame(screen, &RPG.Save{})
+		test := RPG.LoadSave(&RPG.Save{})
+		g.NewGame(screen, &test)
 	case "Settings":
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(0, 0)
@@ -262,7 +296,7 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 	case "Int_Next_Chapter":
 		s.Chapter = "Chp_1_0"
 		Current_Level = "Chp_1_0"
-		NewGame(screen, s)
+		g.NewGame(screen, s)
 	case "Chp_1_0":
 		CanMove = true
 		Current_Level = "Chp_1_0"
@@ -297,8 +331,14 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		ebitenutil.DrawRect(screen, 0, 0, 0, 144, color.RGBA{0, 0, 0, 170})
 		RPG.Button(screen, false, 256-66, 144-18, "Resume", Current_Level)
+		RPG.Button(screen, false, 256-66, 2, "Main Menu", "")
 		RPG.Button(screen, false, 2, 144-18, "Settings", "Settings")
 		RPG.Button(screen, false, 2, 2, "Quit", "Quit")
+		if ebiten.IsKeyPressed(ebiten.KeyEscape) && !Pause {
+			RPG.MainMenuID = Current_Level
+			Pause = true
+		}
+
 	}
 }
 
@@ -326,11 +366,6 @@ func (g *Game) Update(screen *ebiten.Image) error {
 	//CheckButtonID(RPG.MainMenuID, screen, RPG.Save{})
 	g.Draw(screen)
 	// set frame rate
-	if Gaga {
-		g.Player.PlayerX = 16
-		g.Player.PlayerY = 144 - 16
-		Gaga = false
-	}
 	if CanMove {
 		if ebiten.IsKeyPressed(ebiten.KeyUp) {
 			if g.Player.PlayerY > 16 {
@@ -367,7 +402,8 @@ func (g *Game) Update(screen *ebiten.Image) error {
 				}
 			}
 		}
-		if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		if ebiten.IsKeyPressed(ebiten.KeyEscape) && !Pause {
+			Pause = true
 			RPG.MainMenuID = "Pause"
 			CanMove = false
 		}
@@ -380,7 +416,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 // Draw draws the game screen.
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Player.PA = 5
-	g.Player.PD = 5
+	g.Player.PD = 10
 	g.Player.PV = 10
 	g.CheckButtonID(RPG.MainMenuID, screen, &RPG.Save{})
 }

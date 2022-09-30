@@ -42,7 +42,7 @@ func LoadImg(s string) image.Image {
 // load the images
 func Textures_init() {
 	// Gui
-	wesh = LoadImg("assets/Icon.png")
+	wesh = LoadImg("Assets/Icon.png")
 	IconImage = append(IconImage, wesh)
 	// Background
 	BackgroundImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Background.png", ebiten.FilterDefault)

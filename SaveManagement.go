@@ -18,6 +18,7 @@ type Save struct {
 	PV      int    `json:"PV"`
 	PA      int    `json:"PA"`
 	PD      int    `json:"PD"`
+	Mob     map[string]struct{} `json:"Mob"`
 }
 
 // return usr home directory
@@ -63,28 +64,22 @@ func CreateSave(save *Save) {
 	}
 }
 
-func LoadSave(save *Save) {
-	File, err := os.Open(Path)
+func LoadSave(save *Save) Save{
+	jsonFile, err := os.Open(Path)
 	if os.IsNotExist(err) {
 		CreateSave(save)
 	} else if err != nil {
 		log.Fatal(err)
 	} else {
-		u, _ := ioutil.ReadAll(File)
-		json.Unmarshal(u, &save)
+		if err != nil {
+			fmt.Println(err)
+		}
+		defer jsonFile.Close()
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		json.Unmarshal(byteValue, &save)
+		// fmt.Println("Successfully Opened YLock's.json")
 	}
-	File.Close()
-}
-
-func CheckSave() bool {
-	File, err := os.Open(Path)
-	if os.IsNotExist(err) {
-		return false
-	} else {
-		log.Fatal(err)
-	}
-	File.Close()
-	return true
+	return *save
 }
 
 func CanLoad(save Save) bool {
@@ -102,4 +97,9 @@ func UpdateSave(save *Save) {
 		panic(err)
 	}
 	fmt.Println("Save file updated")
+}
+
+func DeleteSave() {
+	os.Remove(Path)
+	fmt.Println("Save folder removed")
 }
