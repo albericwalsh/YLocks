@@ -6,8 +6,7 @@ import (
 	"image/color"
 	"math/rand"
 	"os"
-
-	// "time"
+	"time"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -89,8 +88,8 @@ func (g *Game) NewGame(screen *ebiten.Image, s *RPG.Save) {
 		RPG.MainMenuID = "Int_1_P"
 	case "Chp_1_0":
 		RPG.MainMenuID = "Chp_1_0"
-		Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 10, PA: 3, PD: 1, Beaten: false, Type: "Machine", Image: RPG.Card_Reader}
-		Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 20, PA: 6, PD: 5, Beaten: false, Type: "Master Boss", Image: RPG.PaulImage}
+		Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 15, PA: 3, PD: 1, Beaten: false, Type: "Machine", Image: RPG.Card_Reader}
+		Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 35, PA: 6, PD: 5, Beaten: false, Type: "Master Boss", Image: RPG.PaulImage}
 	case "Chp_2_0":
 		//start 2nd chapter (Souk)
 	case "Chp_3_0":
@@ -139,7 +138,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			screen.DrawImage(RPG.PlayerImage, op)
 			ebitenutil.DrawRect(screen, 9, float64(ScreenResHeight)-79, 100, 5, color.RGBA{0, 0, 0, 170})
 			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-78, 100, float64(ScreenResHeight)-78, color.RGBA{200, 200, 200, 170})
-			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-78, float64(PlayerPV)*10, float64(ScreenResHeight)-78, color.RGBA{0, 255, 0, 170})
+			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-78, (float64(PlayerPV)*100)/float64(g.Player.PV), float64(ScreenResHeight)-78, color.RGBA{0, 255, 0, 170})
 			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-76, 100, float64(ScreenResHeight)-76, color.RGBA{200, 200, 200, 170})
 			ebitenutil.DrawLine(screen, 10, float64(ScreenResHeight)-76, float64(g.Player.PA)*10, float64(ScreenResHeight)-76, color.RGBA{255, 0, 0, 170})
 			// draw the Mob at the Right top of the screen
@@ -162,11 +161,26 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			//---------------------------------------------------------------------------------------------------------
 			switch RPG.MainMenuID {
 			case "Attack":
-				critical := rand.Intn(10)
-				*PV -= g.Player.PA * critical
+				miss := GetMiss(0, 2)
+				critical := Getcritical(0, 3)
+				// fmt.Println("debut ", *PV)
+				if miss != 0 {
+					*PV = *PV
+					// fmt.Println("miss atk: ", *PV)
+				} else {
+					if critical == 0 || critical == 1 {
+						*PV -= g.Player.PA
+						// fmt.Println("pas crit atk:", *PV)
+					} else {
+						*PV -= g.Player.PA * critical
+						// fmt.Println("crit atk: ", *PV)
+					}
+				}
+				// fmt.Println("fin ", *PV)
 				YourTurn = false
 				RPG.MainMenuID = "Fight"
 			case "Regen":
+				fmt.Println(PlayerPV + g.Player.PD)
 				if PlayerPV+g.Player.PD <= g.Player.PV {
 					PlayerPV += g.Player.PD
 				} else {
@@ -214,6 +228,20 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Return Main Menu", "")
 		}
 	}
+}
+
+func Getcritical(minLimit int, maxlimit int) int {
+	rand.Seed(time.Now().UnixNano())
+	rndCrit := rand.Intn(maxlimit-minLimit) + minLimit
+	// fmt.Println("nb crit ", rndCrit)
+	return rndCrit
+}
+
+func GetMiss(minLimit int, maxlimit int) int {
+	rand.Seed(time.Now().UnixNano())
+	rndMiss := rand.Intn(maxlimit-minLimit) + minLimit
+	// fmt.Println("nb miss ", rndMiss)
+	return rndMiss
 }
 
 func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
@@ -416,8 +444,8 @@ func (g *Game) Update(screen *ebiten.Image) error {
 // Draw draws the game screen.
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.Player.PA = 5
-	g.Player.PD = 10
-	g.Player.PV = 10
+	g.Player.PD = 15
+	g.Player.PV = 25
 	g.CheckButtonID(RPG.MainMenuID, screen, &RPG.Save{})
 }
 
