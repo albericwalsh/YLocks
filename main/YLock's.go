@@ -4,7 +4,7 @@ import (
 	"RPG"
 	"fmt"
 	"image/color"
-	// "log"
+	"strings"
 	"math/rand"
 	"os"
 	"time"
@@ -14,13 +14,10 @@ import (
 	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
-// "github.com/hajimehoshi/ebiten/ebitenutil"
-
 type Game struct {
 	Name    string
 	Version string
 	Player  Player
-	screen  *ebiten.Image
 	Mob     map[string]Player
 }
 
@@ -57,6 +54,7 @@ var (
 	Pv              = 0
 	Current_Level   = ""
 	PlayerPV        = 0
+	NextChapter     = ""
 	MobX            = map[string]int{}
 	MobY            = map[string]int{}
 	MobPV           = map[string]int{}
@@ -108,7 +106,13 @@ func (g *Game) NewGame(screen *ebiten.Image, s *RPG.Save) {
 			Mob["Avatar"] = Player{PlayerX: 225, PlayerY: 95, Nom: "Avatar", Image: RPG.Avatar}
 		}
 	case "Chp_2_0":
-		//start 2nd chapter (Souk)
+		RPG.MainMenuID = "Chp_2_0"
+		s := RPG.LoadSave(&RPG.Save{})
+		if !s.CanLoad {
+			Mob["Vitaly"] = Player{PlayerX: 120, PlayerY: 50, Nom: "Vitaly", PV: 50, PA: 8, PD: 5, Beaten: false, Type: "Master Boss", Image: RPG.Vitaly}
+		} else if s.CanLoad {
+			Mob["Vitaly"] = Player{PlayerX: 120, PlayerY: 50, Nom: "Vitaly", PV: 50, PA: 8, PD: 5, Beaten: s.MobBeaten["Vitaly"], Type: "Master Boss", Image: RPG.Vitaly}
+		}
 	case "Chp_3_0":
 		//start 3rd chapter (Classes)
 	case "Chp_4_0":
@@ -146,7 +150,7 @@ func DrawMob(m map[string]Player, screen *ebiten.Image) {
 	}
 }
 
-func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *int) {
+func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *int, s *RPG.Save) {
 	if RPG.MainMenuID == "Init_Fight" {
 		*PV = m[v].PV
 		PlayerPV = g.Player.PV
@@ -241,12 +245,28 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 				temp.Beaten = true
 				Mob[MobName] = temp
 				g.Mob = Mob
-				RPG.MainMenuID = "Chp_1_0" // change the chapitre next level
+				if Mob[MobName].Type == "Master Boss" {
+					CheckChapter := strings.Split(Current_Level, "_")
+					for _, v := range CheckChapter {
+						if v == "1" {
+							CheckChapter[1] = "2"
+						}
+						if v == "2" {
+							CheckChapter[1] = "3"
+						}
+					}
+					NextChapter = strings.Join(CheckChapter[:], "_")
+					Current_Level = "Chp_2_0"
+					g.NewGame(screen, s)
+				} else {
+					NextChapter = Current_Level
+				}
+				RPG.MainMenuID = NextChapter // change the chapitre next level
 				SetMobVariable(Mob, MobName)
 				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, MobX: MobX, MobY: MobY, MobPV: MobPV, MobPA: MobPA, MobPD: MobPD, MobBeaten: MobBeaten, MobImage: MobImage})
 				// fmt.Println(Mob)
 			}
-		} else if PlayerPV <= 0 {
+		} else if PlayerPV < 0 {
 			// draw the Background
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(0, 0)
@@ -363,7 +383,7 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		screen.DrawImage(RPG.Background_Ch1, op)
 		DrawMob(Mob, screen)
 		SetPlayer(screen, g)
-		fmt.Printf("PlayerX: %v, PlayerY: %v \n", g.Player.PlayerX, g.Player.PlayerY)
+		// fmt.Printf("PlayerX: %v, PlayerY: %v \n", g.Player.PlayerX, g.Player.PlayerY)
 		for _, v := range Mob {
 			v.MaxX = v.PlayerX + v.Image.Bounds().Dx()
 			v.MaxY = v.PlayerY + v.Image.Bounds().Dy()
@@ -382,18 +402,39 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 					} else {
 						ebitenutil.DrawRect(screen, 2, float64(ScreenHeight)-20, float64(ScreenResWidth), float64(ScreenHeight), color.RGBA{0, 0, 0, 170})
 						ebitenutil.DebugPrintAt(screen, "C'est de toute beauté", 2, ScreenHeight-20)
-						/*if ebiten.IsKeyPressed(ebiten.KeyEnter){
-							ebitenutil.DrawRect(screen, 2, float64(ScreenHeight)-35, float64(ScreenResWidth), float64(ScreenHeight), color.RGBA{0, 0, 0, 170})
-							ebitenutil.DebugPrintAt(screen, "C'est de toute beauté", 2, ScreenHeight-35)
-						}*/
+					}
+				}
+			}
+		}
+	case "Chp_2_0":
+		CanMove = true
+		Current_Level = "Chp_2_0"
+		op := &ebiten.DrawImageOptions{}
+		screen.DrawImage(RPG.Background_Ch2, op)
+		DrawMob(Mob, screen)
+		SetPlayer(screen, g)
+		// fmt.Printf("PlayerX: %v, PlayerY: %v \n", g.Player.PlayerX, g.Player.PlayerY)
+		for _, v := range Mob {
+			v.MaxX = v.PlayerX + v.Image.Bounds().Dx()
+			v.MaxY = v.PlayerY + v.Image.Bounds().Dy()
+			if (g.Player.PlayerX+25 >= v.PlayerX && g.Player.PlayerX+25 <= v.MaxX) && (g.Player.PlayerY+25 >= v.PlayerY && g.Player.PlayerY+25 <= v.MaxY) {
+				if !v.Beaten {
+					//fight
+					ebitenutil.DrawRect(screen, 2, float64(ScreenHeight)-20, float64(ScreenResWidth), float64(ScreenHeight), color.RGBA{0, 0, 0, 170})
+					ebitenutil.DebugPrintAt(screen, "For Fight "+v.Nom+", Press [ENTER]", 2, ScreenHeight-20)
+					//RPG.Fight(screen, g.Player, v)
+					if ebiten.IsKeyPressed(ebiten.KeyEnter) || InFight {
+						InFight = true
+						RPG.MainMenuID = "Init_Fight"
+						MobName = v.Nom
 					}
 				}
 			}
 		}
 	case "Init_Fight":
-		g.Fight(screen, MobName, Mob, &Pv)
+		g.Fight(screen, MobName, Mob, &Pv, &RPG.Save{})
 	case "Fight":
-		g.Fight(screen, MobName, Mob, &Pv)
+		g.Fight(screen, MobName, Mob, &Pv, &RPG.Save{})
 	case "Pause":
 		op := &ebiten.DrawImageOptions{}
 		screen.DrawImage(RPG.BackgroundImage, op)
@@ -405,7 +446,7 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		RPG.Button(screen, false, 256-66, 2, "Main Menu", "")
 		RPG.Button(screen, false, 2, 144-18, "Settings", "Settings")
 		RPG.Button(screen, false, 2, 2, "Quit", "Quit")
-		if inpututil.IsKeyJustReleased(ebiten.KeyEscape) {
+		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && Pause{
 			RPG.MainMenuID = Current_Level
 			Pause = false
 		}
@@ -478,6 +519,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 			RPG.MainMenuID = "Pause"
 			CanMove = false
+			Pause = true
 		}
 	}
 	// fmt.Print(g.PlayerX, g.Player.PlayerY)
