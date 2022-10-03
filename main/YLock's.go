@@ -292,11 +292,8 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		screen.DrawImage(RPG.BackgroundImage, op)
 		ebitenutil.DrawRect(screen, 0, 0, 256, 144, color.RGBA{0, 0, 0, 170})
 		ebitenutil.DebugPrintAt(screen, "Settings", 10, 10)
-		if Current_Level == "" {
-			RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Ok", "")
-		} else {
-			RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Ok", Current_Level)
-		}
+		RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, MobX: MobX, MobY: MobY, MobPV: MobPV, MobPA: MobPA, MobPD: MobPD, MobBeaten: MobBeaten})
+		RPG.Button(screen, false, ScreenResWidth-70, ScreenHeight-32, "Ok", "")
 		// Settings
 		// Fullscreen
 		ebitenutil.DebugPrintAt(screen, "Fullscreen", 22, 30)
@@ -356,6 +353,7 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		screen.DrawImage(RPG.Background_Ch1, op)
 		DrawMob(Mob, screen)
 		SetPlayer(screen, g)
+		fmt.Printf("PlayerX: %v, PlayerY: %v \n", g.Player.PlayerX, g.Player.PlayerY)
 		for _, v := range Mob {
 			v.MaxX = v.PlayerX + v.Image.Bounds().Dx()
 			v.MaxY = v.PlayerY + v.Image.Bounds().Dy()
@@ -431,7 +429,9 @@ func (g *Game) Update(screen *ebiten.Image) error {
 	if CanMove {
 		if ebiten.IsKeyPressed(ebiten.KeyUp) {
 			if g.Player.PlayerY > 16 {
-				if g.Player.PlayerY < 88 && g.Player.PlayerX < 74 && RPG.MainMenuID == "Chp_1_0" {
+				if g.Player.PlayerY < 88 && g.Player.PlayerX < 73 && RPG.MainMenuID == "Chp_1_0" {
+					fmt.Print()
+				} else if (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 73 && g.Player.PlayerX < 120)) || (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 150 && g.Player.PlayerX < 256)) && RPG.MainMenuID == "Chp_1_0"{
 					fmt.Print()
 				} else {
 					g.Player.PlayerY -= 1
@@ -441,12 +441,11 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		if ebiten.IsKeyPressed(ebiten.KeyDown) {
 			if g.Player.PlayerY < 144-16 {
 				g.Player.PlayerY += 1
-
 			}
 		}
 		if ebiten.IsKeyPressed(ebiten.KeyLeft) {
 			if g.Player.PlayerX > 16 {
-				if g.Player.PlayerY < 88 && g.Player.PlayerX < 74 && RPG.MainMenuID == "Chp_1_0" {
+				if (g.Player.PlayerY < 88 && g.Player.PlayerX < 74) || (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 73 && g.Player.PlayerX < 120)) && RPG.MainMenuID == "Chp_1_0" {
 					fmt.Print()
 				} else {
 					g.Player.PlayerX -= 1
@@ -459,6 +458,8 @@ func (g *Game) Update(screen *ebiten.Image) error {
 					if g.Player.PlayerX < 74-16 {
 						g.Player.PlayerX += 1
 					}
+				} else if (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 135 && g.Player.PlayerX < 205)) || (g.Player.PlayerX >= 205 ) && RPG.MainMenuID == "Chp_1_0"{
+					fmt.Print()
 				} else {
 					g.Player.PlayerX += 1
 				}
