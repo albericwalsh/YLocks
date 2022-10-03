@@ -2,7 +2,7 @@
 
     -fix save apres escap>main menu ✅ 
     -fix save apres escap>main menu>settings>ok ✅ 
-    -fix echap return (finally not fix)
+    -fix echap return (finally not fix, oh no it actually depends)
     -lire les stats des mobs aussi pour les load ✅
     -collison Avatar ✅
     -interact Avatar ✅ 
