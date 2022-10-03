@@ -8,6 +8,8 @@ import (
 
 	"encoding/json"
 	"io/ioutil"
+
+	"github.com/hajimehoshi/ebiten"
 )
 
 type Save struct {
@@ -24,6 +26,7 @@ type Save struct {
 	MobPA    map[string]int    `json:"MobPA"`
 	MobPD    map[string]int    `json:"MobPD"`
 	MobBeaten map[string]bool   `json:"MobBeaten"`
+	MobImage map[string]*ebiten.Image `json:"MobImage"`
 }
 
 // return usr home directory
