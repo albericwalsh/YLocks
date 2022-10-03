@@ -4,6 +4,7 @@ import (
 	"RPG"
 	"fmt"
 	"image/color"
+	// "log"
 	"math/rand"
 	"os"
 	"time"
@@ -58,10 +59,11 @@ var (
 	PlayerPV        = 0
 	MobX            = map[string]int{}
 	MobY            = map[string]int{}
-	MobPV           =	map[string]int{}
+	MobPV           = map[string]int{}
 	MobPA           = map[string]int{}
-	MobPD           = 		map[string]int{}
-	MobBeaten       =  map[string]bool{}
+	MobPD           = map[string]int{}
+	MobBeaten       = map[string]bool{}
+	MobImage        = map[string]*ebiten.Image{}
 
 	Mob = map[string]Player{}
 )
@@ -95,9 +97,16 @@ func (g *Game) NewGame(screen *ebiten.Image, s *RPG.Save) {
 		RPG.MainMenuID = "Int_1_P"
 	case "Chp_1_0":
 		RPG.MainMenuID = "Chp_1_0"
-		Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 15, PA: 3, PD: 1, Beaten: false, Type: "Machine", Image: RPG.Card_Reader}
-		Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 35, PA: 6, PD: 5, Beaten: false, Type: "Master Boss", Image: RPG.PaulImage}
-		Mob["Avatar"] = Player{PlayerX: 225, PlayerY: 95, Nom: "Avatar", Image: RPG.Avatar}
+		s := RPG.LoadSave(&RPG.Save{})
+		if !s.CanLoad {
+			Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 15, PA: 3, PD: 1, Beaten: false, Type: "Machine", Image: RPG.Card_Reader}
+			Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 35, PA: 6, PD: 5, Beaten: false, Type: "Master Boss", Image: RPG.PaulImage}
+			Mob["Avatar"] = Player{PlayerX: 225, PlayerY: 95, Nom: "Avatar", Image: RPG.Avatar}
+		} else if s.CanLoad {
+			Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 15, PA: 3, PD: 1, Beaten: s.MobBeaten["Card Reader"], Type: "Machine", Image: RPG.Card_Reader}
+			Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 35, PA: 6, PD: 5, Beaten: s.MobBeaten["Kog'Maw"], Type: "Master Boss", Image: RPG.PaulImage}
+			Mob["Avatar"] = Player{PlayerX: 225, PlayerY: 95, Nom: "Avatar", Image: RPG.Avatar}
+		}
 	case "Chp_2_0":
 		//start 2nd chapter (Souk)
 	case "Chp_3_0":
@@ -121,6 +130,7 @@ func DrawMob(m map[string]Player, screen *ebiten.Image) {
 	for _, v := range m {
 		op := &ebiten.DrawImageOptions{}
 		op.GeoM.Translate(float64(v.PlayerX)-15, float64(v.PlayerY)-15)
+		// log.Fatal(v.Image)
 		screen.DrawImage(v.Image, op)
 		// draw the name of the mob at the top of the mob
 		ebitenutil.DebugPrintAt(screen, v.Nom, v.PlayerX-15, v.PlayerY-32)
@@ -233,7 +243,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 				g.Mob = Mob
 				RPG.MainMenuID = "Chp_1_0" // change the chapitre next level
 				SetMobVariable(Mob, MobName)
-				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, MobX: MobX, MobY: MobY, MobPV: MobPV, MobPA: MobPA, MobPD: MobPD, MobBeaten: MobBeaten})
+				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, MobX: MobX, MobY: MobY, MobPV: MobPV, MobPA: MobPA, MobPD: MobPD, MobBeaten: MobBeaten, MobImage: MobImage})
 				// fmt.Println(Mob)
 			}
 		} else if PlayerPV <= 0 {
@@ -371,11 +381,11 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 						}
 					} else {
 						ebitenutil.DrawRect(screen, 2, float64(ScreenHeight)-20, float64(ScreenResWidth), float64(ScreenHeight), color.RGBA{0, 0, 0, 170})
-						ebitenutil.DebugPrintAt(screen, "For Interact With "+v.Nom+", Press [ENTER]", 2, ScreenHeight-20)
-						if ebiten.IsKeyPressed(ebiten.KeyEnter){
+						ebitenutil.DebugPrintAt(screen, "C'est de toute beauté", 2, ScreenHeight-20)
+						/*if ebiten.IsKeyPressed(ebiten.KeyEnter){
 							ebitenutil.DrawRect(screen, 2, float64(ScreenHeight)-35, float64(ScreenResWidth), float64(ScreenHeight), color.RGBA{0, 0, 0, 170})
 							ebitenutil.DebugPrintAt(screen, "C'est de toute beauté", 2, ScreenHeight-35)
-						}
+						}*/
 					}
 				}
 			}
