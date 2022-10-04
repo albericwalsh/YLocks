@@ -6,6 +6,7 @@
     -lire les stats des mobs aussi pour les load ✅
     -collison Avatar ✅
     -interact Avatar ✅ 
+    -fix hp update, un turn de retard & affichage dans le négatif 
     -chap 2
         -faire la map 
         -reset les collisions et déplacements du joueur
