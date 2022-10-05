@@ -99,11 +99,11 @@ func (g *Game) NewGame(screen *ebiten.Image, s *RPG.Save) {
 		if !s.CanLoad {
 			Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 15, PA: 3, PD: 1, Beaten: false, Type: "Machine", Image: RPG.Card_Reader}
 			Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 35, PA: 6, PD: 5, Beaten: false, Type: "Master Boss", Image: RPG.PaulImage}
-			Mob["Avatar"] = Player{PlayerX: 225, PlayerY: 95, Nom: "Avatar", Image: RPG.Avatar}
+			Mob["Avatar"] = Player{PlayerX: 225, PlayerY: 95, Nom: "Avatar", Type: "Event", Image: RPG.Avatar}
 		} else if s.CanLoad {
 			Mob["Card Reader"] = Player{PlayerX: 58, PlayerY: 90, Nom: "Card Reader", PV: 15, PA: 3, PD: 1, Beaten: s.MobBeaten["Card Reader"], Type: "Machine", Image: RPG.Card_Reader}
 			Mob["Kog'Maw"] = Player{PlayerX: 160, PlayerY: 50, Nom: "Kog'Maw", PV: 35, PA: 6, PD: 5, Beaten: s.MobBeaten["Kog'Maw"], Type: "Master Boss", Image: RPG.PaulImage}
-			Mob["Avatar"] = Player{PlayerX: 225, PlayerY: 95, Nom: "Avatar", Image: RPG.Avatar}
+			Mob["Avatar"] = Player{PlayerX: 225, PlayerY: 95, Nom: "Avatar", Type: "Event", Image: RPG.Avatar}
 		}
 	case "Chp_2_0":
 		RPG.MainMenuID = "Chp_2_0"
@@ -190,6 +190,8 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			RPG.Button(screen, !YourTurn, ScreenResWidth-180, ScreenHeight-50, "Regen", "Regen")
 			RPG.Button(screen, !YourTurn, ScreenResWidth-180, ScreenHeight-30, "Run", "Run")
 			//---------------------------------------------------------------------------------------------------------
+			fmt.Println(PlayerPV, "pv actuel")
+			fmt.Println((float64(PlayerPV)*100)/(float64(g.Player.PV)), "pv actuel en %")
 			switch RPG.MainMenuID {
 			case "Attack":
 				miss := GetMiss(0, 2)
@@ -211,11 +213,11 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 				YourTurn = false
 				RPG.MainMenuID = "Fight"
 			case "Regen":
-				if PlayerPV+g.Player.PD <= g.Player.PV {
-					PlayerPV += g.Player.PD
-				} else {
+				if (PlayerPV+g.Player.PD) > 25 {
 					PlayerPV = g.Player.PV
 					// RPG.PrintonTime(screen, "You are full HP",10,10, 0)
+				} else if (PlayerPV+g.Player.PD) <= g.Player.PV {
+					PlayerPV = PlayerPV + g.Player.PD
 				}
 				YourTurn = false
 				RPG.MainMenuID = "Fight"
@@ -256,12 +258,12 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 						}
 					}
 					NextChapter = strings.Join(CheckChapter[:], "_")
-					Current_Level = "Chp_2_0"
+					Current_Level = NextChapter
 					g.NewGame(screen, s)
 				} else {
 					NextChapter = Current_Level
 				}
-				RPG.MainMenuID = NextChapter // change the chapitre next level
+				RPG.MainMenuID = NextChapter 
 				SetMobVariable(Mob, MobName)
 				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, MobX: MobX, MobY: MobY, MobPV: MobPV, MobPA: MobPA, MobPD: MobPD, MobBeaten: MobBeaten, MobImage: MobImage})
 				// fmt.Println(Mob)
@@ -389,7 +391,7 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 			v.MaxY = v.PlayerY + v.Image.Bounds().Dy()
 			if (g.Player.PlayerX+25 >= v.PlayerX && g.Player.PlayerX+25 <= v.MaxX) && (g.Player.PlayerY+25 >= v.PlayerY && g.Player.PlayerY+25 <= v.MaxY) {
 				if !v.Beaten {
-					if v.Nom != "Avatar" {
+					if v.Type != "Event" {
 						//fight
 						ebitenutil.DrawRect(screen, 2, float64(ScreenHeight)-20, float64(ScreenResWidth), float64(ScreenHeight), color.RGBA{0, 0, 0, 170})
 						ebitenutil.DebugPrintAt(screen, "For Fight "+v.Nom+", Press [ENTER]", 2, ScreenHeight-20)
@@ -446,7 +448,8 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		RPG.Button(screen, false, 256-66, 2, "Main Menu", "")
 		RPG.Button(screen, false, 2, 144-18, "Settings", "Settings")
 		RPG.Button(screen, false, 2, 2, "Quit", "Quit")
-		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) && Pause{
+		// fmt.Printf("Pause: %v\n", Pause)
+		if inpututil.IsKeyJustReleased(ebiten.KeyEscape) && Pause{
 			RPG.MainMenuID = Current_Level
 			Pause = false
 		}
@@ -516,6 +519,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 				}
 			}
 		}
+		// fmt.Printf("Pause: %v\n", Pause)
 		if inpututil.IsKeyJustPressed(ebiten.KeyEscape) {
 			RPG.MainMenuID = "Pause"
 			CanMove = false
