@@ -138,7 +138,7 @@ func DrawMob(m map[string]Player, screen *ebiten.Image) {
 		screen.DrawImage(v.Image, op)
 		// draw the name of the mob at the top of the mob
 		ebitenutil.DebugPrintAt(screen, v.Nom, v.PlayerX-15, v.PlayerY-32)
-		if == "Event"{
+		if Mob[MobName].Type == "Event"{
 		} else if v.Beaten {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(v.PlayerX+10), float64(v.PlayerY)+10)
