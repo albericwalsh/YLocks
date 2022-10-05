@@ -1,6 +1,9 @@
 package player
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -19,6 +22,19 @@ type Player struct {
 }
 
 var (
-	Mob map[string]Player
+	PlayerPV        = 0
 )
 
+func Getcritical(minLimit int, maxlimit int) int {
+	rand.Seed(time.Now().UnixNano())
+	rndCrit := rand.Intn(maxlimit-minLimit) + minLimit
+	// fmt.Println("nb crit ", rndCrit)
+	return rndCrit
+}
+
+func GetMiss(minLimit int, maxlimit int) int {
+	rand.Seed(time.Now().UnixNano())
+	rndMiss := rand.Intn(maxlimit-minLimit) + minLimit
+	// fmt.Println("nb miss ", rndMiss)
+	return rndMiss
+}

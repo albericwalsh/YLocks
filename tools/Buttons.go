@@ -1,4 +1,4 @@
-package RPG
+package tools
 
 // make a setting button
 

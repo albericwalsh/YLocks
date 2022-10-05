@@ -1,7 +1,7 @@
 package draw
 
 import (
-	"RPG"
+	"RPG/tools"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -20,15 +20,15 @@ func DrawMob(m map[string]player.Player, screen *ebiten.Image) {
 		if v.Type == "Event"{
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(v.PlayerX+10), float64(v.PlayerY)+10)
-			screen.DrawImage(RPG.Info, op)
+			screen.DrawImage(tools.Info, op)
 		} else if v.Beaten {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(v.PlayerX+10), float64(v.PlayerY)+10)
-			screen.DrawImage(RPG.Success, op)
+			screen.DrawImage(tools.Success, op)
 		} else {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(v.PlayerX+10), float64(v.PlayerY)+10)
-			screen.DrawImage(RPG.Warning, op)
+			screen.DrawImage(tools.Warning, op)
 		}
 	}
 }

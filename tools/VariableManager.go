@@ -1,4 +1,4 @@
-package RPG
+package tools
 
 import (
 	"github.com/hajimehoshi/ebiten"

@@ -1,4 +1,4 @@
-package RPG
+package tools
 
 import (
 	"image"
