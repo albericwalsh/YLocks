@@ -49,6 +49,9 @@ var (
 	MobPD           = map[string]int{}
 	MobBeaten       = map[string]bool{}
 	MobImage        = map[string]*ebiten.Image{}
+	IsWait          = false
+	WaitDuration    = 0
+	WaitIndex       = 0
 
 	Mob = map[string]player.Player{}
 )
@@ -175,10 +178,10 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]player.Player,
 				YourTurn = false
 				RPG.MainMenuID = "Fight"
 			case "Regen":
-				if (PlayerPV+g.Player.PD) > 25 {
+				if (PlayerPV + g.Player.PD) > 25 {
 					PlayerPV = g.Player.PV
 					// RPG.PrintonTime(screen, "You are full HP",10,10, 0)
-				} else if (PlayerPV+g.Player.PD) <= g.Player.PV {
+				} else if (PlayerPV + g.Player.PD) <= g.Player.PV {
 					PlayerPV = PlayerPV + g.Player.PD
 				}
 				YourTurn = false
@@ -226,7 +229,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]player.Player,
 				} else {
 					chapter.NextChapter = chapter.Current_Level
 				}
-				RPG.MainMenuID = chapter.NextChapter 
+				RPG.MainMenuID = chapter.NextChapter
 				SetMobVariable(Mob, MobName)
 				RPG.UpdateSave(&RPG.Save{CanLoad: true, Chapter: chapter.Current_Level, PlayerX: g.Player.PlayerX, PlayerY: g.Player.PlayerY, PV: PlayerPV, PA: g.Player.PA, PD: g.Player.PD, MobX: MobX, MobY: MobY, MobPV: MobPV, MobPA: MobPA, MobPD: MobPD, MobBeaten: MobBeaten, MobImage: MobImage})
 				// fmt.Println(Mob)
@@ -418,9 +421,11 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		RPG.Button(screen, false, 2, 144-18, "Settings", "Settings")
 		RPG.Button(screen, false, 2, 2, "Quit", "Quit")
 		// fmt.Printf("Pause: %v\n", Pause)
-		if inpututil.IsKeyJustReleased(ebiten.KeyEscape) && Pause{
+		if inpututil.IsKeyJustReleased(ebiten.KeyEscape) && Pause && !IsWait {
 			RPG.MainMenuID = chapter.Current_Level
 			Pause = false
+			IsWait = true
+			WaitDuration = 10
 		}
 	}
 }
@@ -454,7 +459,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 			if g.Player.PlayerY > 16 {
 				if g.Player.PlayerY < 88 && g.Player.PlayerX < 73 && RPG.MainMenuID == "Chp_1_0" {
 					fmt.Print()
-				} else if (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 73 && g.Player.PlayerX < 120)) || (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 150 && g.Player.PlayerX < 256)) && RPG.MainMenuID == "Chp_1_0"{
+				} else if (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 73 && g.Player.PlayerX < 120)) || (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 150 && g.Player.PlayerX < 256)) && RPG.MainMenuID == "Chp_1_0" {
 					fmt.Print()
 				} else {
 					g.Player.PlayerY -= 1
@@ -481,7 +486,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 					if g.Player.PlayerX < 74-16 {
 						g.Player.PlayerX += 1
 					}
-				} else if (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 135 && g.Player.PlayerX < 205)) || (g.Player.PlayerX >= 205 ) && RPG.MainMenuID == "Chp_1_0"{
+				} else if (g.Player.PlayerY <= 88 && (g.Player.PlayerX > 135 && g.Player.PlayerX < 205)) || (g.Player.PlayerX >= 205) && RPG.MainMenuID == "Chp_1_0" {
 					fmt.Print()
 				} else {
 					g.Player.PlayerX += 1
@@ -493,7 +498,12 @@ func (g *Game) Update(screen *ebiten.Image) error {
 			RPG.MainMenuID = "Pause"
 			chapter.CanMove = false
 			Pause = true
+			IsWait = true
+			WaitDuration = 10
 		}
+	}
+	if IsWait {
+		wait(WaitDuration)
 	}
 	// fmt.Print(g.PlayerX, g.Player.PlayerY)
 	ebiten.SetMaxTPS(60)
@@ -518,4 +528,15 @@ func main() {
 	RPG.Textures_init()
 	game := Game{}
 	game.MainMenu()
+}
+
+func wait(time int) {
+	if WaitIndex < time {
+		j := 10000000000000000 + 10000000000000000
+		fmt.Print(j)
+		WaitIndex++
+	} else if WaitIndex == time {
+		WaitIndex = 0
+		IsWait = false
+	}
 }
