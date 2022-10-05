@@ -27,6 +27,7 @@ var (
 	wesh              image.Image
 	IconImage         []image.Image
 	Info              *ebiten.Image
+	Distributeur      *ebiten.Image
 )
 
 func LoadImg(s string) image.Image {
@@ -53,8 +54,9 @@ func Textures_init() {
 	ButtonImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Button.png", ebiten.FilterDefault)
 	LockedButtonImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/LockedButton.png", ebiten.FilterDefault)
 	OverButtonImage, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/OverButton.png", ebiten.FilterDefault)
-	// Card Reader
+	// Machines
 	Card_Reader, _, _ = ebitenutil.NewImageFromFile("Assets/Map_Textures/Card_Reader.png", ebiten.FilterDefault)
+	Distributeur, _, _ = ebitenutil.NewImageFromFile("Assets/Map_Textures/Distributeur.png", ebiten.FilterDefault)
 	// Card Reader
 	Avatar, _, _ = ebitenutil.NewImageFromFile("Assets/Map_Textures/Avatar.png", ebiten.FilterDefault)
 	// Chapter Backgrounds
