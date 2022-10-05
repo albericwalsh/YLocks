@@ -435,7 +435,7 @@ func (g *Game) MainMenu() {
 	// set the game name
 	g.Name = "YLock's"
 	// set the game version
-	g.Version = "0.1.11"
+	g.Version = "0.2.13"
 	// run the game
 	ebiten.SetWindowIcon(RPG.IconImage)
 	ebiten.SetWindowSize(ScreenWidth, ScreenHeight)
