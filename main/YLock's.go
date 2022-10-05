@@ -138,7 +138,8 @@ func DrawMob(m map[string]Player, screen *ebiten.Image) {
 		screen.DrawImage(v.Image, op)
 		// draw the name of the mob at the top of the mob
 		ebitenutil.DebugPrintAt(screen, v.Nom, v.PlayerX-15, v.PlayerY-32)
-		if v.Beaten {
+		if == "Event"{
+		} else if v.Beaten {
 			op := &ebiten.DrawImageOptions{}
 			op.GeoM.Translate(float64(v.PlayerX+10), float64(v.PlayerY)+10)
 			screen.DrawImage(RPG.Success, op)
@@ -192,6 +193,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			//---------------------------------------------------------------------------------------------------------
 			switch RPG.MainMenuID {
 			case "Attack":
+				fmt.Println((float64(PlayerPV)*100)/(float64(g.Player.PV)), "pv%")
 				miss := GetMiss(0, 2)
 				critical := Getcritical(0, 3)
 				// fmt.Println("debut ", *PV)
@@ -226,6 +228,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 			}
 			if !YourTurn {
 				PlayerPV -= m[v].PA
+				RPG.MainMenuID = "Fight"
 				// RPG.PrintonTime(screen, m[v].Nom+" attack you, damage "+string(m[v].PA), 10, 10, 2)
 				YourTurn = true
 			}
@@ -256,7 +259,7 @@ func (g *Game) Fight(screen *ebiten.Image, v string, m map[string]Player, PV *in
 						}
 					}
 					NextChapter = strings.Join(CheckChapter[:], "_")
-					Current_Level = "Chp_2_0"
+					Current_Level = NextChapter
 					g.NewGame(screen, s)
 				} else {
 					NextChapter = Current_Level

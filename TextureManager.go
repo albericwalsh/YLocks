@@ -17,15 +17,16 @@ var (
 	OverButtonImage   *ebiten.Image
 	Card_Reader       *ebiten.Image
 	Background_Ch1    *ebiten.Image
-	Background_Ch2	  *ebiten.Image
+	Background_Ch2    *ebiten.Image
 	PlayerImage       *ebiten.Image
 	PaulImage         *ebiten.Image
 	Vitaly            *ebiten.Image
-	Avatar 		  	  *ebiten.Image
+	Avatar            *ebiten.Image
 	Warning           *ebiten.Image
 	Success           *ebiten.Image
 	wesh              image.Image
 	IconImage         []image.Image
+	Info              *ebiten.Image
 )
 
 func LoadImg(s string) image.Image {
@@ -66,4 +67,5 @@ func Textures_init() {
 	// icon
 	Warning, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Warning.png", ebiten.FilterDefault)
 	Success, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Success.png", ebiten.FilterDefault)
+	Info, _, _ = ebitenutil.NewImageFromFile("Assets/Gui_Textures/Info.png", ebiten.FilterDefault)
 }
