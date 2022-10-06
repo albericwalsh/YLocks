@@ -28,7 +28,6 @@ var (
 	IsWait          = false
 	WaitDuration    = 0
 	WaitIndex       = 0
-
 	Pause           = false
 )
 
