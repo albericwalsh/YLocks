@@ -104,7 +104,7 @@ func UpdateSave(save *Save) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Save file updated")
+	// fmt.Println("Save file updated")
 }
 
 func DeleteSave() {

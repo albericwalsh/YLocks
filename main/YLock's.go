@@ -50,8 +50,8 @@ var (
 	MobBeaten       = map[string]bool{}
 	MobImage        = map[string]*ebiten.Image{}
 	IsWait          = false
-	WaitDuration    = 0
-	WaitIndex       = 0
+	WaitDuration    time.Duration
+	WaitTemp        time.Time
 
 	Mob = map[string]player.Player{}
 )
@@ -424,8 +424,7 @@ func (g *Game) CheckButtonID(ID string, screen *ebiten.Image, s *RPG.Save) {
 		if inpututil.IsKeyJustReleased(ebiten.KeyEscape) && Pause && !IsWait {
 			RPG.MainMenuID = chapter.Current_Level
 			Pause = false
-			IsWait = true
-			WaitDuration = 10
+			Wait(1 * time.Second)
 		}
 	}
 }
@@ -498,12 +497,10 @@ func (g *Game) Update(screen *ebiten.Image) error {
 			RPG.MainMenuID = "Pause"
 			chapter.CanMove = false
 			Pause = true
-			IsWait = true
-			WaitDuration = 10
 		}
 	}
 	if IsWait {
-		wait(WaitDuration)
+		WaitSys()
 	}
 	// fmt.Print(g.PlayerX, g.Player.PlayerY)
 	ebiten.SetMaxTPS(60)
@@ -530,13 +527,19 @@ func main() {
 	game.MainMenu()
 }
 
-func wait(time int) {
-	if WaitIndex < time {
-		j := 10000000000000000 + 10000000000000000
-		fmt.Print(j)
-		WaitIndex++
-	} else if WaitIndex == time {
-		WaitIndex = 0
+func Wait(Duration time.Duration) {
+	if !IsWait {
+		IsWait = true
+		WaitDuration = Duration
+		WaitTemp = time.Now()
+		fmt.Println("Wait init")
+	}
+}
+
+func WaitSys() {
+	j := time.Now()
+	if j.Sub(WaitTemp) >= WaitDuration {
 		IsWait = false
+		fmt.Println("Wait finish")
 	}
 }
